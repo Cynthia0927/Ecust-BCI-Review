@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>港中深 CS 面试 · 一晚助记系统 · 刘昕越</title>
+<style>
+  :root{
+    --paper:#ffffff; --ink:#17171d; --muted:#6c6c78; --line:#e8e8ee;
+    --navy:#213a63; --navy-2:#2f5089; --wash:#f3f5fb;
+    --green:#177a4b; --green-soft:#eaf6ef; --green-line:#bfe3cd;
+    --red:#c0392b; --red-soft:#fdeeec; --red-line:#f3c9c3;
+    --amber:#a86a00; --amber-soft:#fbf3e4;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+    --serif:Georgia,"Times New Roman","Songti SC","SimSun",serif;
+    --shadow:0 1px 2px rgba(20,20,40,.04),0 8px 24px rgba(20,20,40,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);
+    font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;
+    padding-bottom:64px;}
+  .wrap{max-width:840px;margin:0 auto;padding:0 18px}
+
+  /* header */
+  header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);
+    backdrop-filter:saturate(1.4) blur(8px);border-bottom:1px solid var(--line)}
+  .hd{max-width:840px;margin:0 auto;padding:12px 18px 0}
+  .hd-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .brand{font-weight:800;letter-spacing:.02em;color:var(--navy);font-size:18px}
+  .brand small{font-weight:600;color:var(--muted);font-size:12.5px;letter-spacing:0}
+  .hd-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .prog{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .prog b{color:var(--green);font-weight:700}
+  .warnchip{border:1px solid var(--red-line);background:var(--red-soft);color:var(--red);
+    font-weight:700;font-size:12.5px;border-radius:999px;padding:5px 11px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;line-height:1}
+  .warnchip:hover{background:#fbe3df}
+  .warnchip .dot{width:7px;height:7px;border-radius:50%;background:var(--red)}
+
+  nav.tabs{display:flex;gap:2px;overflow-x:auto;margin-top:10px;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  nav.tabs::-webkit-scrollbar{display:none}
+  .tab{appearance:none;border:0;background:none;font-family:inherit;font-size:14.5px;
+    font-weight:600;color:var(--muted);padding:9px 13px 12px;cursor:pointer;white-space:nowrap;
+    border-bottom:2.5px solid transparent;position:relative;top:1px}
+  .tab .sub{font-size:11px;color:#a6a6b2;font-weight:600;margin-left:5px}
+  .tab[aria-selected="true"]{color:var(--navy);border-bottom-color:var(--navy)}
+  .tab:hover{color:var(--ink)}
+
+  main{padding-top:18px}
+  .view{display:none;animation:fade .18s ease}
+  .view.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){.view,.view.on{animation:none}}
+
+  /* deck toolbar */
+  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .deckname{font-weight:700;color:var(--ink);font-size:15px}
+  .deckname span{color:var(--muted);font-weight:600;font-size:13px;margin-left:4px}
+  .tools{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+  .ghost{appearance:none;font-family:inherit;font-size:13px;font-weight:600;
+    border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:9px;
+    padding:6px 11px;cursor:pointer}
+  .ghost:hover{border-color:#d6d6df;color:var(--ink)}
+  .ghost.act{border-color:var(--navy);color:var(--navy);background:var(--wash)}
+
+  /* card */
+  .card{border:1px solid var(--line);border-radius:16px;background:#fff;
+    box-shadow:var(--shadow);padding:22px 22px 20px;min-height:220px;
+    display:flex;flex-direction:column}
+  .card-meta{display:flex;align-items:center;gap:9px;margin-bottom:4px}
+  .idx{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:600}
+  .state-badge{font-size:11.5px;font-weight:700;border-radius:999px;padding:3px 9px;line-height:1}
+  .state-badge.ok{background:var(--green-soft);color:var(--green)}
+  .state-badge.again{background:var(--amber-soft);color:var(--amber)}
+  .qhead{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#9a9aa6;margin:6px 0 2px}
+  .qtitle{font-size:19px;font-weight:750;color:var(--ink);line-height:1.4;margin:2px 0 4px}
+
+  /* koujue hero */
+  .ku{margin:12px 0 6px;padding:16px 14px;border-radius:13px;background:var(--wash);
+    border:1px solid #e6e9f5}
+  .ku-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center}
+  .ku-char{appearance:none;font-family:inherit;cursor:pointer;border:1px solid #cfd6ea;
+    background:#fff;color:var(--navy);font-weight:800;font-size:26px;line-height:1;
+    padding:11px 13px;border-radius:11px;transition:all .12s ease;letter-spacing:.02em}
+  .ku-char:hover{border-color:var(--navy-2);box-shadow:0 2px 8px rgba(33,58,99,.12)}
+  .ku-char[aria-expanded="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .ku-dot{color:#b9c0d6;font-weight:700;font-size:20px;user-select:none}
+  .ku-hint{text-align:center;font-size:12px;color:#9a9aa6;margin-top:9px}
+  .ku-means{margin-top:11px;display:flex;flex-direction:column;gap:0}
+  .ku-mean{display:none;font-size:14.5px;color:#33333d;padding:7px 4px;border-top:1px dashed #d9dded}
+  .ku-mean.show{display:block}
+  .ku-mean b{color:var(--navy);font-weight:800;margin-right:8px;font-size:16px}
+
+  .reveal-btn{appearance:none;font-family:inherit;font-size:15px;font-weight:700;
+    border:1.5px solid var(--navy);color:#fff;background:var(--navy);border-radius:11px;
+    padding:11px 16px;cursor:pointer;margin-top:14px;align-self:flex-start}
+  .reveal-btn:hover{background:var(--navy-2);border-color:var(--navy-2)}
+  .reveal-btn.open{background:#fff;color:var(--navy)}
+
+  .back{margin-top:14px;display:none}
+  .back.show{display:block;animation:fade .18s ease}
+  @media (prefers-reduced-motion:reduce){.back.show{animation:none}}
+  .lbl{font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+    color:#9a9aa6;margin:14px 0 6px}
+  .lbl:first-child{margin-top:0}
+  .chain{font-size:14.5px;color:#3a3a44;background:#fafafc;border:1px solid var(--line);
+    border-radius:10px;padding:11px 13px;line-height:1.7}
+  .say{font-family:var(--serif);font-size:16.5px;line-height:1.75;color:#1c1c28;
+    border-left:3px solid var(--navy);background:#fbfcfe;border-radius:0 10px 10px 0;
+    padding:12px 15px}
+  .say p{margin:0 0 11px}
+  .say p:last-child{margin-bottom:0}
+  .tip{margin-top:12px;font-size:14px;color:#7a5a12;background:var(--amber-soft);
+    border:1px solid #f0e0b8;border-radius:10px;padding:10px 13px}
+  .tip b{color:var(--amber)}
+  b.hot{color:var(--red);font-weight:800;background:var(--red-soft);
+    border-radius:4px;padding:0 4px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+  b.good{color:var(--green);font-weight:800;background:var(--green-soft);
+    border-radius:4px;padding:0 4px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+  b.nv{color:var(--navy);font-weight:800}
+
+  pre.code{margin:0;font-family:"SF Mono",Consolas,"Roboto Mono",Menlo,monospace;
+    font-size:13.5px;line-height:1.65;color:#1a1a22;background:#f6f7f9;
+    border:1px solid #e4e4ec;border-radius:10px;padding:13px 14px;overflow-x:auto;
+    white-space:pre;tab-size:2}
+
+  /* mark buttons */
+  .marks{display:flex;gap:9px;margin-top:16px}
+  .mk{appearance:none;font-family:inherit;font-size:14.5px;font-weight:700;cursor:pointer;
+    border-radius:10px;padding:10px 16px;border:1.5px solid}
+  .mk.ok{border-color:var(--green-line);color:var(--green);background:var(--green-soft)}
+  .mk.ok:hover{background:#dff0e6}
+  .mk.again{border-color:#f0e0b8;color:var(--amber);background:var(--amber-soft)}
+  .mk.again:hover{background:#f6ead0}
+
+  .navbar{display:flex;align-items:center;gap:10px;margin-top:16px}
+  .navbtn{appearance:none;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;
+    border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;
+    padding:9px 14px;flex:1}
+  .navbtn:hover{border-color:#cfcfd8}
+  .navbtn:disabled{opacity:.4;cursor:default}
+  .navbtn.mid{flex:0 0 auto;color:var(--muted)}
+  .done-note{text-align:center;color:var(--green);font-weight:700;font-size:14px;
+    padding:26px 0;display:none}
+  .done-note.show{display:block}
+
+  /* reference view */
+  .refblock{border:1px solid var(--line);border-radius:14px;background:#fff;
+    box-shadow:var(--shadow);padding:4px 18px;margin-bottom:16px}
+  .refblock summary{cursor:pointer;list-style:none;padding:15px 0;font-weight:750;
+    font-size:16px;color:var(--navy);display:flex;align-items:center;gap:10px}
+  .refblock summary::-webkit-details-marker{display:none}
+  .refblock summary .chev{margin-left:auto;color:#b6b6c2;transition:transform .18s}
+  .refblock[open] summary .chev{transform:rotate(90deg)}
+  .refblock .body{padding:0 0 16px;border-top:1px solid var(--line)}
+  .fix{padding:14px 0;border-bottom:1px dashed var(--line)}
+  .fix:last-child{border-bottom:0}
+  .fix h4{margin:0 0 6px;font-size:15.5px;color:var(--ink)}
+  .fix h4 .n{color:var(--red);font-weight:800;margin-right:7px}
+  .fix p{margin:6px 0;font-size:14.5px;color:#3a3a44;line-height:1.65}
+  .sayline{font-family:var(--serif);font-size:15.5px;line-height:1.65;margin-top:8px;
+    padding:10px 13px;border-radius:9px}
+  .sayline.good{background:var(--green-soft);border:1px solid var(--green-line);color:#12603a}
+  .sayline.plain{background:#fafafc;border:1px solid var(--line);color:#2a2a34}
+  ol.gold{margin:8px 0 14px;padding-left:0;counter-reset:g;list-style:none}
+  ol.gold li{counter-increment:g;position:relative;padding:11px 12px 11px 46px;margin-bottom:8px;
+    background:#fbfcfe;border:1px solid var(--line);border-radius:10px;font-size:15.5px;
+    line-height:1.55;color:#1e1e2a}
+  ol.gold li::before{content:counter(g);position:absolute;left:12px;top:11px;
+    width:24px;height:24px;border-radius:7px;background:var(--navy);color:#fff;
+    font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  ol.gold li b{color:var(--navy)}
+  .resc{padding:11px 0;border-bottom:1px dashed var(--line)}
+  .resc:last-child{border-bottom:0}
+  .resc .when{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:5px}
+  .resc .en{font-family:var(--serif);font-size:15px;color:#1c1c28;line-height:1.6}
+  .rev-q{font-family:var(--serif);font-size:15px;color:#1c1c28;padding:9px 0;
+    border-bottom:1px dashed var(--line)}
+  .rev-q:last-child{border-bottom:0}
+  .prin{display:flex;gap:11px;padding:10px 0;border-bottom:1px dashed var(--line);align-items:baseline}
+  .prin:last-child{border-bottom:0}
+  .prin .k{flex:0 0 auto;font-weight:800;color:var(--navy);font-size:15px;min-width:40px}
+  .prin .v{font-size:14.5px;color:#3a3a44}
+
+  .howto{font-size:13px;color:var(--muted);text-align:center;margin:20px 0 4px;line-height:1.7}
+  .howto kbd{font-family:var(--sans);font-size:11.5px;background:#f2f2f6;border:1px solid #e0e0e8;
+    border-bottom-width:2px;border-radius:5px;padding:1px 6px;color:#4a4a56;font-weight:600}
+  footer{text-align:center;color:#a6a6b2;font-size:12px;padding:24px 0 8px}
+  footer b{color:var(--navy)}
+</style>
+</head>
+<body>
+<header>
+  <div class="hd">
+    <div class="hd-top">
+      <div class="brand">港中深 CS 面试 · 一晚助记<br><small>刘昕越 · 英文作答，口诀记忆用中文 · 点字看含义</small></div>
+      <div class="hd-right">
+        <span class="prog" id="prog">会了 <b id="pgOk">0</b>/<span id="pgAll">0</span></span>
+        <button class="warnchip" id="warnChip"><span class="dot"></span>必改 4 项</button>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs" role="tablist"></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- drill views injected -->
+  <section class="view" id="view-koujue" role="tabpanel"></section>
+  <section class="view" id="view-qa" role="tabpanel"></section>
+  <section class="view" id="view-code" role="tabpanel"></section>
+  <section class="view" id="view-num" role="tabpanel"></section>
+  <!-- reference -->
+  <section class="view" id="view-ref" role="tabpanel"></section>
+
+  <div class="howto" id="howto"></div>
+  <footer>一晚速通 · 把口诀串顺、把真话讲清、把短板转成动机 —— <b>面试考的是真实 + 清晰，不是完美</b>。</footer>
+</main>
+
+<script>
+"use strict";
+/* ---------- safe inline markup: **navy** [[red]] {{green}} ---------- */
+function md(str, parent){
+  const re=/(\*\*.+?\*\*|\[\[.+?\]\]|\{\{.+?\}\})/g;
+  let last=0,m;
+  while((m=re.exec(str))!==null){
+    if(m.index>last) parent.appendChild(document.createTextNode(str.slice(last,m.index)));
+    const tok=m[0]; const inner=tok.slice(2,-2); const b=document.createElement("b");
+    if(tok.startsWith("**")) b.className="nv";
+    else if(tok.startsWith("[[")) b.className="hot";
+    else b.className="good";
+    b.textContent=inner; parent.appendChild(b); last=re.lastIndex;
+  }
+  if(last<str.length) parent.appendChild(document.createTextNode(str.slice(last)));
+}
+function para(html,cls){const p=document.createElement("p");if(cls)p.className=cls;md(html,p);return p;}
+
+/* ================= DATA ================= */
+const F = {
+  self:{tag:"自我介绍", mn:"名·学·实·领·校",
+    chars:[
+      {c:"名",m:"名校专业 + 一句话主线：Robotics @ ECUST，data→model→system"},
+      {c:"学",m:"学术：GPA 91 · 专业 top5 · 国家奖学金 · 自学统计学习/Hands-On ML"},
+      {c:"实",m:"实践：Jane Street 铜牌 top10% · 独立做 知识图谱+LLM 问答"},
+      {c:"领",m:"领导：CIC 副主席 · 近 2000 人"},
+      {c:"校",m:"点名学校 + 双向奔赴：dream school · AI 全栈 · 目标 algorithm engineer"}],
+    chain:"名校专 + “data→model→system” → GPA91·top5·国奖·自学2本 → Jane Street 铜牌top10%·KG+LLM(solo) → VP·2000人 → dream school·AI全栈·algorithm engineer",
+    essence:"Robotics 背景 + 数学/ML 强，一条主线贯穿：from data, to model, to real system." },
+  why:{tag:"为什么读 CS", mn:"栈·顶·湾·首",
+    chars:[
+      {c:"栈",m:"AI Full-Stack 打通 基础+算法+系统+产业（最大理由）"},
+      {c:"顶",m:"校企 Capstone：早接触真实产业问题，完成从学生项目到工业级的过渡"},
+      {c:"湾",m:"大湾区：高密度技术场景 + 紧密产业连接"},
+      {c:"首",m:"top choice，拿 offer 会认真优先"}],
+    chain:"AI Full-Stack 打通算法+系统+产业 → 好系统=能部署稳定运行不只指标高 → Capstone 早接触真实产业问题 → 大湾区高密度场景 → top choice",
+    essence:"AI 全栈把算法、系统、产业连起来，正好补我缺的系统层。" },
+  weak:{tag:"缺点 / 不足", mn:"缺·课·转",
+    chars:[
+      {c:"缺",m:"诚实：系统层不够深，Robotics 专业没系统上 OS / 网络 / 体系结构"},
+      {c:"课",m:"具体列必修课：算法设计 / AI / 操作系统 / 并行计算 直接补短板"},
+      {c:"转",m:"立刻转成动机：“这正是我申请这个项目的原因” —— 全程不道歉、不贬低"}],
+    chain:"系统层不够深 → 没系统上 OS/网络/体系结构 → 能搭 pipeline 但没学透调度/内存/并发 → “正是我申请的原因” → 必修课直接补 → 懂算法+懂系统部署",
+    essence:"把最大的“弱点”讲成最强的“动机”：所以我来读这个项目。" },
+  code:{tag:"代码谁写", mn:"核·辅·例·量",
+    chars:[
+      {c:"核",m:"核心逻辑自己写：算法/模型结构/验证评估/debug，懂每一行"},
+      {c:"辅",m:"AI 只做样板 / 查 API / 前端脚手架，且一定 read & test"},
+      {c:"例",m:"软著为例分边界：前端 AI 辅助、核心算法全我"},
+      {c:"量",m:"你写了多少：亲手写 切分/Ridge/weighted R²/loss/MLP/streaming"}],
+    chain:"核心逻辑自己写懂每行 → AI 只做样板/查API/前端脚手架且必测 → 软著前端AI辅助核心算法全我 → AI 是效率工具不是理解替代品",
+    essence:"核心自己写、懂每一行；AI 只做边角且必测。" },
+  js:{tag:"Jane Street", mn:"懂·修·集",
+    chars:[
+      {c:"懂",m:"懂数据：扫全部 partition，发现 3 个“float”其实是类别特征"},
+      {c:"修",m:"修验证（最重要）：随机 KFold 本地高榜低=泄漏 → 按交易日分组切分"},
+      {c:"集",m:"评估 LGB/XGB/CatBoost/MLP，最终 ensemble = Ridge(自写)+XGB+MLP+TabM"}],
+    chain:"79特征预测收益 weighted R² 我是lead → 懂数据(3个float其实类别) → 修验证(随机KFold泄漏→按交易日切) → 评估LGB/XGB/CatBoost/MLP 最终Ridge+XGB+MLP+TabM → 铜牌top10%≈2×baseline",
+    essence:"低信噪比+分布漂移下，评估协议比模型选择更重要。" },
+  kg:{tag:"知识图谱 + RAG", mn:"本·抽·图·问",
+    chars:[
+      {c:"本",m:"本体：Protégé 设计 6 类实体（时间/地点/企业/化学品/事故类型/原因）"},
+      {c:"抽",m:"抽取：Dify + LLM，chunk/迭代推理/结构化输出 → 三元组 JSON+N-Triples"},
+      {c:"图",m:"图库：Neo4j 存三元组，Cypher 检索 + 子图可视化"},
+      {c:"问",m:"问答：Dify RAG，检索+生成，答案可追溯 → >90% 准确率&召回"}],
+    chain:"长报告→结构化可查(solo) → 本体Protégé 6实体 → 抽取Dify+LLM三元组 → Neo4j图Cypher → RAG可追溯 → >90%准召",
+    essence:"用结构化知识锚定大模型，让答案可追溯。" },
+  robot:{tag:"软著 · 零样本机器人", mn:"感·供·技·控",
+    chars:[
+      {c:"感",m:"感知：RGB-D + 预训练视觉基础模型，从文本提示检测&分割目标"},
+      {c:"供",m:"可供性接地：预测交互点/区域，用深度+内参把 2D 抬升到 3D"},
+      {c:"技",m:"技能库：grasp/push/place 按“可供性参数”参数化（非物体身份）→ 可迁移"},
+      {c:"控",m:"控制：逆运动学 IK + 碰撞感知运动规划 + 执行"}],
+    chain:"换物体重训不scale→零样本锚定视觉可供性 → 感知RGB-D+预训练模型检测分割 → 可供性接地2D→3D → 技能库按可供性参数化 → 控制IK+规划 → 核心自写/预训练集成非训练/前端AI辅助",
+    essence:"把“泛化到新物体”从“重训模型”变成“可供性接地 + 技能参数化”。" },
+  career:{tag:"职业规划", mn:"标·短·长",
+    chars:[
+      {c:"标",m:"目标：机器学习算法工程师"},
+      {c:"短",m:"短期 1–3 年：大厂 / 大模型公司，做搜推 / 智能问答 / 内容理解"},
+      {c:"长",m:"长期 3–10 年：跨算法 + 系统部署（OS / 调度 / 性能优化）"}],
+    chain:"目标ML算法工程师 → 短期1-3年大厂/大模型公司做搜推/QA/内容理解 → 长期3-10年跨算法+系统部署(OS/调度/性能)",
+    essence:"从能做项目的学生，成长为能稳定交付算法能力、并懂系统落地的工程师。" }
+};
+
+/* Q&A deck: full English answers to rehearse aloud */
+const QA = [
+  {f:"self", q:"请做个自我介绍（≈ 90 秒）",
+   say:`Good morning professors. It's a great honor to be here. My name is Liu Xinyue, an undergraduate majoring in Robotics Engineering at East China University of Science and Technology. My core interest is the full chain from data, to model, to real system deployment, and my dream is to become an algorithm engineer.
+First, academics. I keep a GPA of 91 out of 100, rank in the top 5 of my major, and received the National Scholarship. I built a solid math and machine learning foundation through my courses and by self-studying Statistical Learning Methods and Hands-On Machine Learning.
+Second, practice. In the Jane Street Kaggle competition I led the modeling workflow and won a Bronze Medal, top 10 percent. And I independently built a chemical-accident question-answering system using knowledge graphs and large language models.
+Third, teamwork. I am Vice President of my university's Computer Information Communication Association, with nearly 2000 members.
+And what I must mention: CUHK-Shenzhen has been my dream school since high school. I'm applying to the MSc in Computer Science because its AI Full-Stack focus connects algorithm design, programming, and real application — exactly the training I need to become a solid algorithm engineer.`,
+   tip:"控制在 90 秒，别念成个人陈述。留一个金句：from data to model to system。GPA 口语说整数 91，被专门追问精确值再报 90.94。"},
+  {f:"why", q:"为什么申请这个专业 / 为什么读 CS",
+   say:`I'm applying to the MSc in Computer Science because it fits my background and goal very well. My biggest reason is its AI Full-Stack focus: it connects computer science foundations, algorithm training, system implementation, and industry collaboration instead of treating them separately. This matches what I realized in undergrad — a valuable intelligent system is not just higher metrics in the lab, but one that can be implemented, deployed, and run stably under real constraints.
+The industry-collaborative Capstone matters to me because it lets me face real industrial problems early and finish the transition from student projects to industrial-grade problem solving. And the Greater Bay Area means high-density technical scenarios and close industry connections. I'm considering a few related CS and data science programs, but this program is my top choice, and if I get an offer I will seriously prioritize it.`,
+   tip:"落点在 AI Full-Stack 打通算法/系统/产业，正好补我缺的系统层。别贬低其他学校。"},
+  {f:"weak", q:"你的缺点 / 不足是什么？（★核心必问）",
+   say:`My honest limitation is that my project experience is still not deep enough at the system level. Because my major is Robotics Engineering, besides Algorithms and Data Structures I did not take many core CS courses in a systematic way — such as operating systems, computer networks, and computer architecture. I can build a model or a pipeline, but I have not fully learned how low-level mechanisms like task scheduling, memory management, and concurrency affect the performance and stability of a deployed system.
+This is exactly why I'm applying to this program. The required courses cover algorithm design, artificial intelligence, operating systems, and parallel computing, which directly fill my gaps. In the long term I want to be an engineer who understands both algorithm principles and system-level deployment, and this program is the right place to build that foundation.`,
+   tip:"全场最关键。语气平静，说完立刻转成“所以我来读”。绝不反复道歉、不贬低自己 —— 把最大的“弱点”变成最强的“动机”。"},
+  {f:"code", q:"代码是你自己写的还是 AI 写的？（★CS 必问）",
+   say:`I write the core logic myself — the algorithm design, model structure, validation and evaluation, and debugging. For those I need to understand every line, so I write them by hand. I use AI for routine work — boilerplate, quickly checking an API, or scaffolding a front-end prototype — but I always read and test what it produces, and I never rely on it for parts I don't understand. For example, in my software-copyright robot platform, the front-end prototype used AI assistance, but the core algorithm module was entirely my own. I see AI as an efficiency tool, not a replacement for understanding.`,
+   tip:"边界要清楚：核心自己写、AI 只做边角且必测。举软著为例分边界最稳。"},
+  {f:"code", q:"（追问）那你亲手写了多少 / 哪些代码？",
+   say:`In Jane Street, a team project, I personally coded the data-exploration, the leakage-free split by trading day, the Ridge baseline end to end, the custom weighted R-squared, the custom loss for TabM, large parts of the MLP and its training loop, and the streaming inference. The knowledge graph and the robot platform were solo — I built everything. I'm strongest in Python for ML; I can take a problem from data to a working system on my own, and I know my systems-level skills still need strengthening — part of why I want this program.`,
+   tip:"能说出 ≥ 6 个你亲手写的模块，且分清 自己写 / AI / 队友。这些模块在“代码关”里都能默写更好。"},
+  {f:"js", q:"讲讲 Jane Street 这个项目（Kaggle · Bronze · Top 10%）",
+   say:`Jane Street is a top quantitative market maker. The task: predict a short-term return proxy from 79 anonymized features, scored by a weighted R-squared. It's a code competition — we submit an inference script and the server streams data day by day. I was the modeling-workflow lead.
+My work had three parts. First, data understanding: I scanned all partitions, checked missing ratios and ranges, and found three "float" features were actually categorical. Second — most important — I fixed the validation strategy. Random K-fold gave a great local score but a much lower leaderboard, a classic leakage signal. I regrouped the split by trading day, so all samples from one day stay in the same fold; after that local and leaderboard moved together, which became our anchor for trusting any new idea. Third, for models I first {{evaluated LightGBM, XGBoost, CatBoost and an MLP}}; then for the final ensemble I {{kept a Ridge baseline, XGBoost, the MLP, and added TabM}} for diversity, with weights chosen by grid search.
+I also wrote the custom weighted R-squared metric, a custom loss, and the streaming inference that caches yesterday's features. Result: Bronze Medal, top 10 percent of 3000+ teams, final score roughly double the baseline.`,
+   tip:"绿色那句是消解简历↔稿子矛盾的关键句，务必说顺（简历写“评估 LGB/XGB/CatBoost/MLP”，最终“留 Ridge/XGB/MLP/TabM”）。被追问超参翻“数字关”。"},
+  {f:"kg", q:"讲讲 化工事故知识图谱 + RAG（Solo）",
+   say:`Chinese chemical-accident reports are long, unstructured documents. My goal: turn accident reports from 2010 to 2021 into structured, queryable knowledge, and build a question-answering system on top. This was solo.
+Four stages. First, I designed the ontology in Protege — core entities: time, location, enterprise, chemical, accident type, and cause. Second, I built a knowledge-extraction workflow in Dify with an LLM — chunking, iterative reasoning, structured output — producing triples in JSON and N-Triples. Third, I loaded the triples into a Neo4j graph database, linking accidents to enterprises, chemicals, and causes, using Cypher for retrieval and subgraph visualization. Fourth, I built a RAG question-answering system in Dify that combines retrieval from the knowledge base with model generation, so answers come with traceable evidence.
+Through QA testing and cross-checking the graph against source reports, I reached over 90 percent accuracy and recall.`,
+   tip:"一句话价值：用结构化知识锚定大模型，让答案可追溯。四步顺序 本·抽·图·问 别乱。"},
+  {f:"robot", q:"讲讲 视觉可供性 · 零样本机器人平台（软著 · Solo）",
+   say:`This is the software behind my robotics research, registered as a software copyright. The problem: a robot arm normally needs task-specific training or teleoperation for every new object, which doesn't scale. My platform lets a robot manipulate novel objects zero-shot — no new data per object — by grounding actions in visual affordances, i.e. where and how an object can be interacted with.
+Four modules. First, perception: from an RGB-D image it uses pretrained visual foundation models to detect and segment the target from a text prompt, so it works on unseen objects out of the box. Second, affordance grounding: it predicts the interaction points, and lifts 2D points into 3D poses using depth and camera intrinsics. Third, a skill library: parameterized primitives — grasp, push, place — where each skill is parameterized by the predicted affordance, not by object identity, which is what lets it transfer. Fourth, control: inverse kinematics plus collision-aware motion planning, executed on the robot. On top I built a control platform — a back end orchestrating the pipeline and a front-end dashboard.
+The core algorithm and system integration are my own code. I used [[pretrained visual foundation models]] as components — I integrated and adapted them, not trained from scratch. In total the codebase is roughly [[X thousand lines]], almost all Python.`,
+   tip:"红色两处是占位符！今晚必须换成你真实用的模型和真实行数（见「必改」③）。老师几乎必问“核心算法你写的吗、多少行、哪个模型”。"},
+  {f:"career", q:"你的职业规划？",
+   say:`My goal is to become a machine learning algorithm engineer. Short term, in one to three years, I want to join a company with real business scenarios and strong R&D — such as Microsoft, Tencent, or Alibaba, or an innovative large-model company — and apply my training to real problems like search and recommendation, intelligent question answering, and content understanding. This stage completes the transition from a student who can finish projects to an engineer who can stably deliver algorithm capability in industry.
+Long term, in three to ten years, I want to go deeper in intelligent-systems algorithms and understand both algorithm principles and complex system deployment — operating systems, resource scheduling, performance optimization — to close the gap between a model that works in the lab and a system that runs stably and scalably in production.`,
+   tip:"口诀 标·短·长。长期落点又回到“系统部署”，和你的缺点/申请动机首尾呼应。"}
+];
+
+/* Code deck: your own code — explain aloud + write the skeleton */
+const CODE = [
+  {title:"① 按交易日的无泄漏切分（Jane Street 最核心）",
+   logic:"把“同一个交易日的所有样本”整体分进同一折，避免未来信息泄漏到训练里。",
+   code:`self.dates = self.df['date_id'].unique()
+selected_dates = [d for i, d in enumerate(self.dates)
+                  if i % N_fold != fold]
+df_train = self.df.loc[self.df['date_id'].isin(selected_dates)]`,
+   explain:"先取所有唯一交易日，按“日的序号 mod N_fold”决定这个日归哪一折，再用 isin 一次性把整天数据放进去。切分的最小单位是“整天”不是“单行”，否则同一天样本横跨训练/验证 → 泄漏。"},
+  {title:"② weighted MSE 的正确写法（一个真实踩过的 bug）",
+   logic:"先算每个样本的 MSE，再乘每个样本的权重，最后才平均；顺序反了就错。",
+   code:`# 正确：per-sample loss → 乘权重 → 再平均
+loss = F.mse_loss(y_hat, y, reduction='none') * w
+loss = loss.mean()
+
+# 错误：reduction='mean' 先把所有样本平均，
+#       再乘 weight，等于把 weight 当全局尺度
+`,
+   explain:"教训：永远检查高层库函数的默认参数（这里默认 reduction='mean'）。“check library defaults”本身就是很好的工程素养回答。"},
+  {title:"③ R² Loss（和评估指标对齐的自定义损失）",
+   logic:"和评估指标 weighted R² 对齐的自定义损失，是“不减均值”版本。",
+   code:`mse_loss = torch.sum((y_pred - y_true) ** 2)
+var_y    = torch.sum(y_true ** 2)
+return mse_loss / (var_y + 1e-38)`,
+   explain:"好处三点：batch 内自动归一化、loss 稳定在 [0,1]、方向和评估指标完全一致（优化 loss 就是优化分数）。加 1e-38 防除零。"},
+  {title:"④ streaming 推理的 lag 缓存（体现你懂“流式/状态”）",
+   logic:"用一个跨调用保存的变量存“昨天的 responder”，每天第一个 batch 存进去，后续 batch 从里面按时间步 join 回来。",
+   code:`lags_history = None   # module-level 跨调用状态
+
+def predict(test, lags):
+    global lags_history
+    if test['time_id'][0] == 0:      # 一天开始
+        lags_history = lags          # 存下今天的 lags
+        test = test.join(lags, on=keys)
+    else:                            # 同一天后续 batch
+        row = lags_history.filter(time_id == test['time_id'][0])
+        test = test.join(row, on=keys)
+    return model(test)`,
+   explain:"用 module-level 变量 lags_history 维护状态。做任何 streaming pipeline，我第一步都会验证“第一个 batch 是否完整、后续 batch 是否依赖外部状态”。"},
+  {title:"⑤ 2D → 3D 位姿抬升（软著平台里你写的几何部分）",
+   logic:"拿 2D 像素点的深度值，用相机内参反投影到相机坐标系，再用手眼标定变换到机器人基坐标系。",
+   code:`# 内参反投影：像素(u,v,深度d) → 相机坐标系 3D
+X = (u - cx) * d / fx
+Y = (v - cy) * d / fy
+Z = d
+# 再乘手眼标定矩阵 T_base<-cam 到机器人基坐标系
+p_base = T_base_cam @ [X, Y, Z, 1]`,
+   explain:"取该像素深度 d，用内参 (fx,fy,cx,cy) 反投影得相机坐标系 3D 点，再乘手眼标定矩阵到机器人基坐标系，得到可执行的 3D 交互位姿。主要误差来源是标定误差和深度噪声。"}
+];
+
+/* Numbers deck: recall the exact figure */
+const NUM = [
+  {q:"GPA / 排名？", a:"**90.94/100**（口语说 91），机器人工程专业 **Top 5**。国家奖学金 + 一等奖学金 + 优秀学生。"},
+  {q:"英语成绩？", a:"[[CET-6 594]]（项目要雅思/托福）。被问 English proficiency 就说 594 + 在准备/已考的雅思托福 + 全英文面试本身即证明。"},
+  {q:"软著登记号？", a:"**2026SR0488269**（视觉可供性零样本机器人平台）。"},
+  {q:"Jane Street 成绩？", a:"**Bronze** · **Top 10% of 3000+** 队 · 最终分 ≈ **2× baseline**。"},
+  {q:"Jane Street 数据规模？", a:"**79** 匿名特征 + **9** responder（目标 responder_6）· **39** 标的 · **10** partition · 几千万行 Parquet。"},
+  {q:"Jane Street 最终 ensemble 用了哪些模型？", a:"{{评估 LightGBM/XGBoost/CatBoost/MLP，最终留 Ridge + XGBoost + MLP + TabM}}（权重 grid search）。"},
+  {q:"XGB 超参？", a:"lr=**0.05** · max_depth=**6** · n_estimators=**200** · reg_lambda=**5**。"},
+  {q:"NN 结构？", a:"**3** 层 [512,512,256] · 输出 **5×Tanh** · **5-fold** · patience=**25**。"},
+  {q:"TabM 关键参数？", a:"k=**32** head · n_blocks=**3** · d_block=**512** · noise **N(0, 0.035²)**。"},
+  {q:"ensemble 权重？", a:"NN+XGB **0.70** · Ridge **0.10** · TabM **0.40** · clip **[-5,5]**（权重和>1 是有意轻度放大）。"},
+  {q:"知识图谱 数据 / 成果？", a:"《2010–2021 化工事故案例》**686** 页 · **200+** 起 · **6** 类实体 · 准确率&召回 **>90%**。"},
+  {q:"知识图谱 技术栈？", a:"**Protégé**（本体）· **Dify+LLM**（抽取/RAG）· **Neo4j+Cypher**（图库）。"},
+  {q:"软著 四模块？", a:"**感知 → 可供性接地(2D→3D) → 技能库(按可供性参数化) → 控制**。"},
+  {q:"产品实习 技术贡献？", a:"30+ 访谈 → 200+ 痛点 → 3 大矛盾 · 3 万字 MRD/PRD · **23** 异常流 · 四级 **RBAC** · **47** 原子组件 · React + FastAPI。"},
+  {q:"学生工作？", a:"CIC 副主席 · 近 **2000** 成员 · 电脑维修服务 **500+**（2023 优秀青年志愿项目）· Course Share **340+** stars。"},
+  {q:"项目背书（学校/学制）？", a:"港中深 AI 领域 CS Ranking 中国 **16** / 全球 **25** · 学费 **¥318,000** · **36** 学分 · **2** 年 · 全英文。"}
+];
+
+const GOLD = [
+  "从数据、到模型、到系统落地。 <b>(from data, to model, to real system)</b>",
+  "低信噪比、分布漂移下，评估协议比模型选择更重要。 <b>— Jane Street 方法论</b>",
+  "用结构化知识锚定大模型，让答案可追溯。 <b>— 知识图谱方法论</b>",
+  "我没系统学过 CS 核心系统课，而这正是我申请这个项目的原因。 <b>— 缺点即动机</b>",
+  "我想成为一个懂系统落地的机器学习算法工程师。 <b>— 目标定位</b>"
+];
+
+const FIX = [
+  {n:"①", t:"Jane Street 模型：简历和背诵稿对不上（最容易被戳穿）",
+   body:"简历写 **LightGBM / XGBoost / CatBoost / MLP**；稿子/最终 ensemble 写 **Ridge / XGBoost / MLP / TabM**。老师会问“到底用了哪些模型”。",
+   lineType:"good",
+   line:"I evaluated LightGBM, XGBoost, CatBoost and an MLP; then for the final ensemble I kept a Ridge baseline, XGBoost, the MLP, and added TabM for diversity.",
+   note:"= 评估过一批（含 LGB/CatBoost），最终上线只留 Ridge+XGB+MLP+TabM。两边全对上，反而显得你做过认真的模型选择。"},
+  {n:"②", t:"GPA 口径：简历 91，问答稿 90.94",
+   body:"统一：自我介绍口语说 **“a GPA of 91 out of 100”**（和简历一致）；被专门问精确 GPA/排名时答 **“90.94, top 5”**。",
+   note:"90.94 四舍五入就是 91，口语用整数、被追精确值再报小数，最稳。"},
+  {n:"③", t:"软著：具体视觉模型 + 代码行数留空（必须换成真话）",
+   body:"「问答」里软著答案有 [[pretrained visual foundation models]] 和 [[X thousand lines]] 两处占位。今晚换成你真实用的：GroundingDINO+SAM 做检测分割？DINOv2/SD-DINO 做语义对应？训练过的 affordance head？ROS+MoveIt / PyBullet / 真机？代码大约几千行？—— 想清楚并写死。",
+   lineType:"plain",
+   line:"救场（若某模型细节真不确定，别硬编名字）：At a high level it does open-vocabulary detection and segmentation to locate the object; the specific model I used is …",
+   note:"“核心算法你写的吗、多少行、哪个模型”几乎必问。"},
+  {n:"④", t:"Course Share（340 stars）：你到底写没写代码，必须如实",
+   body:"几乎必被追问“你写代码了吗”。二选一写死：**(A)** 我写了脚本/前端页面 —— 说清写了什么；**(B)** 我做的是资源整理 + 维护结构 + 审阅合并 PR + 写文档。千万别把“资源维护”吹成“写了核心代码”。",
+   note:"如实说 (B) 本身就证明你懂 Git/GitHub/PR/评审 —— 这就是软件工程能力，不丢人。"}
+];
+
+const RESCUE = {
+  phrases:[
+    {when:"想用中文答技术题", en:"May I answer this question in Chinese? I think I can express it more precisely."},
+    {when:"需要想一下", en:"Could I take a few seconds to organize my thoughts?"},
+    {when:"只懂直觉、不确定公式", en:"At a high level, my understanding is …; I'm not fully confident about the exact formula, but I can explain the intuition."},
+    {when:"完全不会", en:"I don't have a complete answer right now. Based on my understanding it may relate to [你知道的]. I would start from the theoretical definition, then how it's used, and I'll definitely review it after the interview."},
+    {when:"被质疑某个技术选择", en:"That's a good point. I chose it because [依据]; I also considered [方案], my concern was [trade-off]; if I did it again I might [折衷]."},
+    {when:"被追问团队/研发做的部分", en:"That part was done by the team; my own role was …"}
+  ],
+  reverse:[
+    "What qualities do successful students in this Computer Science program usually have?",
+    "For students from a related but non-CS background, how does the program help them build the core systems foundation in the first year?",
+    "Are there opportunities to work on industry-collaborative / Capstone projects with partner companies in the Greater Bay Area?",
+    "How does the program support students who want to become algorithm engineers, for example through internships or company connections?"
+  ],
+  principles:[
+    {k:"诚实", v:"团队/研发做的部分大方讲分工，别揽功；不会就用救场句，别硬编。"},
+    {k:"清晰", v:"先给结论/骨架，再展开细节；用口诀保证不漏点、不跑题。"},
+    {k:"转化", v:"每个“短板”都平静地收到“这正是我申请这个项目的原因”。"}
+  ]
+};
+
+/* ================= progress (guarded localStorage) ================= */
+const PKEY="lxy_mnemo_progress_v1";
+let progress={};
+try{const raw=localStorage.getItem(PKEY);if(raw)progress=JSON.parse(raw)||{};}catch(e){progress={};}
+function saveProg(){try{localStorage.setItem(PKEY,JSON.stringify(progress));}catch(e){}}
+function setState(id,st){ if(st==null)delete progress[id]; else progress[id]=st; saveProg(); updateGlobal(); }
+function getState(id){return progress[id]||null;}
+
+/* deck registry */
+const KKEYS=Object.keys(F);
+const DECKS={
+  koujue:{name:"口诀速记",sub:"背骨架 · 8 条",count:KKEYS.length,keys:KKEYS},
+  qa:{name:"问答自测",sub:"讲全答案 · 9 题",count:QA.length},
+  code:{name:"代码关",sub:"讲清 + 默写 · 5 段",count:CODE.length},
+  num:{name:"数字关",sub:"秒答关键数字 · "+NUM.length+" 项",count:NUM.length}
+};
+const TABS=[
+  {id:"koujue",label:"口诀",sub:"8"},
+  {id:"qa",label:"问答",sub:"9"},
+  {id:"code",label:"代码",sub:"5"},
+  {id:"num",label:"数字",sub:String(NUM.length)},
+  {id:"ref",label:"速查",sub:"必改·金句·救场"}
+];
+
+/* per-deck runtime state */
+const rt={
+  koujue:{i:0,onlyAgain:false,revealed:false,order:null},
+  qa:{i:0,onlyAgain:false,revealed:false,order:null},
+  code:{i:0,onlyAgain:false,revealed:false,order:null},
+  num:{i:0,onlyAgain:false,revealed:false,order:null}
+};
+/* order = permutation of stable indices; progress stays keyed by stable index */
+["koujue","qa","code","num"].forEach(d=>{rt[d].order=[...Array(deckItems(d).length).keys()];});
+let activeView="koujue";
+
+/* ---------- build tabs ---------- */
+const tabsEl=document.getElementById("tabs");
+TABS.forEach(t=>{
+  const b=document.createElement("button");
+  b.className="tab";b.setAttribute("role","tab");b.dataset.view=t.id;
+  b.innerHTML=`${t.label}<span class="sub">${t.sub}</span>`;
+  b.addEventListener("click",()=>switchView(t.id));
+  tabsEl.appendChild(b);
+});
+
+function switchView(v){
+  activeView=v;
+  document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.view===v?"true":"false"));
+  document.querySelectorAll(".view").forEach(el=>el.classList.remove("on"));
+  document.getElementById("view-"+v).classList.add("on");
+  if(v==="ref") renderRef(); else renderDeck(v);
+  window.scrollTo({top:0,behavior:"instant" in window?"instant":"auto"});
+}
+
+/* ---------- ids per deck ---------- */
+function cardId(deck,i){return deck+":"+i;}
+function deckItems(deck){
+  if(deck==="koujue")return DECKS.koujue.keys.map(k=>({key:k}));
+  if(deck==="qa")return QA;
+  if(deck==="code")return CODE;
+  if(deck==="num")return NUM;
+  return [];
+}
+function visibleIndexes(deck){
+  const order=rt[deck].order||[...Array(deckItems(deck).length).keys()];
+  if(!rt[deck].onlyAgain)return order.slice();
+  const f=order.filter(i=>getState(cardId(deck,i))==="again");
+  return f.length?f:order.slice(); /* if none marked again, show all */
+}
+
+/* ---------- render a drill deck ---------- */
+function renderDeck(deck){
+  const host=document.getElementById("view-"+deck);
+  host.innerHTML="";
+  const meta=DECKS[deck];
+  const vis=visibleIndexes(deck);
+  const st=rt[deck];
+  if(st.i>=vis.length)st.i=0;
+
+  /* toolbar */
+  const tb=document.createElement("div");tb.className="toolbar";
+  const dn=document.createElement("div");dn.className="deckname";
+  dn.innerHTML=`${meta.name} <span>${meta.sub}</span>`;
+  tb.appendChild(dn);
+  const tools=document.createElement("div");tools.className="tools";
+  const okc=countState(deck,"ok"),agc=countState(deck,"again");
+  const stat=document.createElement("span");stat.className="ghost";stat.style.cursor="default";
+  stat.innerHTML=`✓ ${okc} · ↻ ${agc}`;
+  const bAgain=document.createElement("button");bAgain.className="ghost"+(st.onlyAgain?" act":"");
+  bAgain.textContent=st.onlyAgain?"看全部":"只练再练";
+  bAgain.addEventListener("click",()=>{st.onlyAgain=!st.onlyAgain;st.i=0;st.revealed=false;renderDeck(deck);});
+  const bShuf=document.createElement("button");bShuf.className="ghost";bShuf.textContent="打乱";
+  bShuf.addEventListener("click",()=>{shuffle(deck);renderDeck(deck);});
+  const bReset=document.createElement("button");bReset.className="ghost";bReset.textContent="重置进度";
+  bReset.addEventListener("click",()=>{
+    if(confirm("清空「"+meta.name+"」的会了/再练标记？")){
+      deckItems(deck).forEach((_,i)=>delete progress[cardId(deck,i)]);
+      saveProg();updateGlobal();renderDeck(deck);
+    }
+  });
+  tools.append(stat,bAgain,bShuf,bReset);tb.appendChild(tools);
+  host.appendChild(tb);
+
+  const realIdx=vis[st.i];
+  const card=buildCard(deck,realIdx,st.i,vis.length);
+  host.appendChild(card);
+}
+
+function buildCard(deck,idx,pos,total){
+  const st=rt[deck];
+  const id=cardId(deck,idx);
+  const card=document.createElement("div");card.className="card";
+
+  const meta=document.createElement("div");meta.className="card-meta";
+  const ix=document.createElement("span");ix.className="idx";ix.textContent=`${pos+1} / ${total}`;
+  meta.appendChild(ix);
+  const stt=getState(id);
+  if(stt){const bd=document.createElement("span");bd.className="state-badge "+(stt==="ok"?"ok":"again");
+    bd.textContent=stt==="ok"?"会了":"再练";meta.appendChild(bd);}
+  card.appendChild(meta);
+
+  if(deck==="koujue")   buildKoujueFront(card,idx,st.revealed);
+  else if(deck==="qa")  buildQAFront(card,idx,st.revealed);
+  else if(deck==="code")buildCodeFront(card,idx,st.revealed);
+  else                  buildNumFront(card,idx,st.revealed);
+
+  /* reveal toggle */
+  const rb=document.createElement("button");rb.className="reveal-btn"+(st.revealed?" open":"");
+  rb.textContent=st.revealed?"收起答案":"显示答案";
+  rb.addEventListener("click",()=>{st.revealed=!st.revealed;renderDeck(deck);});
+  card.appendChild(rb);
+
+  const back=card.querySelector(".back");
+  if(st.revealed&&back)back.classList.add("show");
+
+  /* mark buttons (only after reveal) */
+  if(st.revealed){
+    const marks=document.createElement("div");marks.className="marks";
+    const ok=document.createElement("button");ok.className="mk ok";ok.textContent="✓ 会了";
+    ok.addEventListener("click",()=>{setState(id,"ok");goNext(deck);});
+    const ag=document.createElement("button");ag.className="mk again";ag.textContent="↻ 再练";
+    ag.addEventListener("click",()=>{setState(id,"again");goNext(deck);});
+    marks.append(ok,ag);card.appendChild(marks);
+  }
+
+  /* nav */
+  const nb=document.createElement("div");nb.className="navbar";
+  const prev=document.createElement("button");prev.className="navbtn";prev.textContent="‹ 上一张";
+  prev.disabled=pos===0;prev.addEventListener("click",()=>{if(st.i>0){st.i--;st.revealed=false;renderDeck(deck);}});
+  const rand=document.createElement("button");rand.className="navbtn mid";rand.textContent="随机";
+  rand.addEventListener("click",()=>{const v=visibleIndexes(deck);if(v.length>1){let j;do{j=Math.floor(Math.random()*v.length);}while(j===st.i);st.i=j;}st.revealed=false;renderDeck(deck);});
+  const next=document.createElement("button");next.className="navbtn";next.textContent="下一张 ›";
+  next.disabled=pos>=total-1;next.addEventListener("click",()=>goNext(deck));
+  nb.append(prev,rand,next);card.appendChild(nb);
+  return card;
+}
+
+function goNext(deck){
+  const st=rt[deck];const total=visibleIndexes(deck).length;
+  if(st.i<total-1){st.i++;st.revealed=false;renderDeck(deck);}
+  else{st.revealed=false;renderDeck(deck);}
+}
+
+/* ---------- fronts ---------- */
+function mnemonicBlock(fkey,revealAll){
+  const f=F[fkey];
+  const box=document.createElement("div");box.className="ku";
+  const row=document.createElement("div");row.className="ku-row";
+  const means=document.createElement("div");means.className="ku-means";
+  f.chars.forEach((ch,i)=>{
+    const btn=document.createElement("button");btn.className="ku-char";btn.type="button";
+    btn.textContent=ch.c;btn.setAttribute("aria-expanded","false");
+    const mrow=document.createElement("div");mrow.className="ku-mean";
+    const b=document.createElement("b");b.textContent=ch.c;mrow.appendChild(b);
+    mrow.appendChild(document.createTextNode(ch.m));
+    means.appendChild(mrow);
+    btn.addEventListener("click",()=>{
+      const open=btn.getAttribute("aria-expanded")==="true";
+      btn.setAttribute("aria-expanded",open?"false":"true");
+      mrow.classList.toggle("show",!open);
+    });
+    row.appendChild(btn);
+    if(i<f.chars.length-1){const d=document.createElement("span");d.className="ku-dot";d.textContent="·";row.appendChild(d);}
+    if(revealAll){btn.setAttribute("aria-expanded","true");mrow.classList.add("show");}
+  });
+  box.appendChild(row);
+  const hint=document.createElement("div");hint.className="ku-hint";hint.textContent="👆 点每个字，先自己回忆它代表什么，再看含义";
+  box.appendChild(hint);
+  box.appendChild(means);
+  return box;
+}
+
+function buildKoujueFront(card,idx,revealed){
+  const key=DECKS.koujue.keys[idx];const f=F[key];
+  const h=document.createElement("div");h.className="qhead";h.textContent="口诀";
+  const t=document.createElement("div");t.className="qtitle";t.textContent=f.tag;
+  card.append(h,t);
+  card.appendChild(mnemonicBlock(key,revealed));
+  const back=document.createElement("div");back.className="back";
+  back.append(labelEl("锚点串（背这条顺序）"),chainEl(f.chain),labelEl("一句话精髓"),chainEl(f.essence));
+  card.appendChild(back);
+}
+function buildQAFront(card,idx,revealed){
+  const item=QA[idx];const f=F[item.f];
+  const h=document.createElement("div");h.className="qhead";h.textContent="面试问题（英文作答）";
+  const t=document.createElement("div");t.className="qtitle";t.textContent=item.q;
+  card.append(h,t);
+  card.appendChild(mnemonicBlock(item.f,revealed));
+  const back=document.createElement("div");back.className="back";
+  back.appendChild(labelEl("要说的话（英文）"));
+  const say=document.createElement("div");say.className="say";
+  item.say.split("\n").forEach(pp=>say.appendChild(para(pp)));
+  back.appendChild(say);
+  if(item.tip){const tp=document.createElement("div");tp.className="tip";
+    const b=document.createElement("b");b.textContent="提示 ";tp.appendChild(b);md(item.tip,tp);back.appendChild(tp);}
+  card.appendChild(back);
+}
+function buildCodeFront(card,idx,revealed){
+  const item=CODE[idx];
+  const h=document.createElement("div");h.className="qhead";h.textContent="代码 · 先讲逻辑，能默写更好";
+  const t=document.createElement("div");t.className="qtitle";t.textContent=item.title;
+  card.append(h,t);
+  const lg=document.createElement("div");lg.className="chain";lg.style.marginTop="12px";
+  const b=document.createElement("b");b.className="nv";b.textContent="一句话逻辑：";lg.appendChild(b);
+  lg.appendChild(document.createTextNode(item.logic));
+  card.appendChild(lg);
+  const back=document.createElement("div");back.className="back";
+  back.appendChild(labelEl("代码"));
+  const pre=document.createElement("pre");pre.className="code";pre.textContent=item.code;back.appendChild(pre);
+  back.appendChild(labelEl("讲法"));
+  back.appendChild(chainEl(item.explain));
+  card.appendChild(back);
+}
+function buildNumFront(card,idx,revealed){
+  const item=NUM[idx];
+  const h=document.createElement("div");h.className="qhead";h.textContent="关键数字 · 目标秒答";
+  const t=document.createElement("div");t.className="qtitle";t.textContent=item.q;
+  card.append(h,t);
+  const back=document.createElement("div");back.className="back";
+  const a=document.createElement("div");a.className="chain";a.style.marginTop="4px";a.style.fontSize="16px";
+  md(item.a,a);back.appendChild(a);
+  card.appendChild(back);
+}
+
+function labelEl(txt){const d=document.createElement("div");d.className="lbl";d.textContent=txt;return d;}
+function chainEl(txt){const d=document.createElement("div");d.className="chain";md(txt,d);return d;}
+
+/* ---------- reference view ---------- */
+function renderRef(){
+  const host=document.getElementById("view-ref");
+  if(host.dataset.built==="1")return;
+  host.dataset.built="1";
+  /* 必改 */
+  const b1=details("⚠ 开工前必改 4 项（今晚第一件事）",true);
+  const body1=b1.querySelector(".body");
+  FIX.forEach(fx=>{
+    const d=document.createElement("div");d.className="fix";
+    const h=document.createElement("h4");const n=document.createElement("span");n.className="n";n.textContent=fx.n;
+    h.appendChild(n);h.appendChild(document.createTextNode(fx.t));d.appendChild(h);
+    d.appendChild(para(fx.body));
+    if(fx.line){const s=document.createElement("div");s.className="sayline "+(fx.lineType||"plain");s.textContent=fx.line;d.appendChild(s);}
+    if(fx.note){const p=para(fx.note);p.style.color="#6c6c78";p.style.fontSize="13.5px";d.appendChild(p);}
+    body1.appendChild(d);
+  });
+  host.appendChild(b1);
+  /* 金句 */
+  const b2=details("5 句金句（任何题都能往这五句上收）",false);
+  const ol=document.createElement("ol");ol.className="gold";
+  GOLD.forEach(g=>{const li=document.createElement("li");li.innerHTML=g;ol.appendChild(li);});
+  b2.querySelector(".body").appendChild(ol);host.appendChild(b2);
+  /* 救场 */
+  const b3=details("救场话术 + 反问 + 三原则",false);
+  const bd=b3.querySelector(".body");
+  const l1=labelEl("卡壳兜底句");bd.appendChild(l1);
+  RESCUE.phrases.forEach(p=>{const d=document.createElement("div");d.className="resc";
+    const w=document.createElement("div");w.className="when";w.textContent=p.when;
+    const e=document.createElement("div");e.className="en";e.textContent=p.en;d.append(w,e);bd.appendChild(d);});
+  const l2=labelEl("反问（面试最后问 1–2 个）");l2.style.marginTop="16px";bd.appendChild(l2);
+  RESCUE.reverse.forEach(r=>{const d=document.createElement("div");d.className="rev-q";d.textContent=r;bd.appendChild(d);});
+  const l3=labelEl("临场三原则");l3.style.marginTop="16px";bd.appendChild(l3);
+  RESCUE.principles.forEach(pr=>{const d=document.createElement("div");d.className="prin";
+    const k=document.createElement("div");k.className="k";k.textContent=pr.k;
+    const v=document.createElement("div");v.className="v";v.textContent=pr.v;d.append(k,v);bd.appendChild(d);});
+  host.appendChild(b3);
+}
+function details(summary,open){
+  const d=document.createElement("details");d.className="refblock";if(open)d.open=true;
+  const s=document.createElement("summary");s.appendChild(document.createTextNode(summary));
+  const ch=document.createElement("span");ch.className="chev";ch.textContent="▸";s.appendChild(ch);
+  const body=document.createElement("div");body.className="body";
+  d.append(s,body);return d;
+}
+
+/* ---------- helpers ---------- */
+function countState(deck,st){let c=0;deckItems(deck).forEach((_,i)=>{if(getState(cardId(deck,i))===st)c++;});return c;}
+function shuffle(deck){
+  /* permute display order only; progress stays keyed by stable index */
+  const o=rt[deck].order;
+  for(let i=o.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[o[i],o[j]]=[o[j],o[i]];}
+  rt[deck].i=0;rt[deck].revealed=false;
+}
+function updateGlobal(){
+  let ok=0,all=0;
+  ["koujue","qa","code","num"].forEach(dk=>{const n=deckItems(dk).length;all+=n;
+    for(let i=0;i<n;i++)if(getState(cardId(dk,i))==="ok")ok++;});
+  document.getElementById("pgOk").textContent=ok;
+  document.getElementById("pgAll").textContent=all;
+}
+
+/* ---------- keyboard ---------- */
+document.addEventListener("keydown",e=>{
+  if(activeView==="ref")return;
+  const tag=(e.target.tagName||"").toLowerCase();
+  if(tag==="input"||tag==="textarea")return;
+  const deck=activeView,st=rt[deck],total=visibleIndexes(deck).length;
+  if(e.key===" "){e.preventDefault(); if(!st.revealed){st.revealed=true;renderDeck(deck);} else goNext(deck);}
+  else if(e.key==="ArrowRight"){e.preventDefault();goNext(deck);}
+  else if(e.key==="ArrowLeft"){e.preventDefault();if(st.i>0){st.i--;st.revealed=false;renderDeck(deck);}}
+  else if(e.key==="1"&&st.revealed){setState(cardId(deck,visibleIndexes(deck)[st.i]),"ok");goNext(deck);}
+  else if(e.key==="2"&&st.revealed){setState(cardId(deck,visibleIndexes(deck)[st.i]),"again");goNext(deck);}
+});
+
+document.getElementById("warnChip").addEventListener("click",()=>switchView("ref"));
+
+/* howto */
+document.getElementById("howto").innerHTML=
+  '桌面端快捷键：<kbd>空格</kbd> 显示答案/下一张 · <kbd>←</kbd><kbd>→</kbd> 翻卡 · <kbd>1</kbd> 会了 · <kbd>2</kbd> 再练　|　进度自动保存在本机（下载到本地打开时生效）';
+
+/* init */
+updateGlobal();
+switchView("koujue");
+</script>
+</body>
+</html>
